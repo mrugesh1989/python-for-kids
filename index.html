@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Python for Kids — Learn to code with Sage the Snake</title>
+<meta name="description" content="An interactive Python learning adventure for kids aged 5–15. Solve puzzles, write real Python, and level up with Sage the Snake." />
+
+<!-- Real Python in the browser -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/skulpt/1.2.0/skulpt.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/skulpt/1.2.0/skulpt-stdlib.min.js"></script>
+
+<!-- Fonts: Fredoka (display) + Nunito (body) + Fira Code (code) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&family=Fira+Code:wght@500&display=swap" rel="stylesheet" />
+
+<style>
+/* ============================================================
+   PYTHON FOR KIDS — design tokens
+   Sticker-book look: chunky borders, hard shadows, candy palette.
+   Signature element: the curriculum map IS a winding python.
+   ============================================================ */
+:root {
+  --ink: #23285a;          /* deep indigo — text & borders */
+  --bg: #f2f6ff;           /* soft sky */
+  --card: #ffffff;
+  --py-yellow: #ffd43b;    /* Python yellow */
+  --py-blue: #3b6fd6;      /* Python blue, brightened for kids */
+  --snake: #34d399;        /* Sage green */
+  --snake-dark: #10b981;
+  --coral: #ff6b6b;
+  --purple: #a78bfa;
+  --locked: #c7cbe3;
+  --radius: 22px;
+  --shadow: 6px 6px 0 var(--ink);
+  --shadow-sm: 3px 3px 0 var(--ink);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  background-image: radial-gradient(#dbe4ff 1.6px, transparent 1.6px);
+  background-size: 26px 26px;
+  color: var(--ink);
+  min-height: 100vh;
+}
+h1, h2, h3, .display { font-family: 'Fredoka', sans-serif; }
+button { font-family: 'Fredoka', sans-serif; cursor: pointer; }
+:focus-visible { outline: 4px solid var(--py-blue); outline-offset: 2px; border-radius: 8px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ---------- header ---------- */
+header {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--card);
+  border-bottom: 3px solid var(--ink);
+  padding: 10px 18px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.logo { display: flex; align-items: center; gap: 8px; font-family: 'Fredoka'; font-weight: 700; font-size: 1.25rem; }
+.logo .snake-emoji { font-size: 1.6rem; display: inline-block; }
+.logo b { color: var(--py-blue); }
+.logo span.kids { color: var(--snake-dark); }
+nav { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+.navbtn {
+  border: 3px solid var(--ink); background: var(--card); color: var(--ink);
+  border-radius: 14px; padding: 7px 14px; font-size: .95rem; font-weight: 600;
+  box-shadow: var(--shadow-sm); transition: transform .08s;
+}
+.navbtn:hover { transform: translate(-1px,-1px); }
+.navbtn.active { background: var(--py-yellow); }
+.navbtn.pro { background: var(--purple); color: #fff; }
+.xp-pill {
+  border: 3px solid var(--ink); border-radius: 999px; background: var(--py-yellow);
+  padding: 6px 14px; font-weight: 800; font-size: .9rem; box-shadow: var(--shadow-sm);
+}
+
+/* ---------- layout ---------- */
+main { max-width: 980px; margin: 0 auto; padding: 26px 16px 90px; }
+.view { display: none; }
+.view.visible { display: block; animation: pop-in .25s ease; }
+@keyframes pop-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.card {
+  background: var(--card); border: 3px solid var(--ink); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 22px;
+}
+
+/* ---------- hero ---------- */
+.hero { text-align: center; padding: 34px 20px 26px; position: relative; overflow: hidden; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.1; }
+.hero h1 .py { color: var(--py-blue); }
+.hero h1 .kids { color: var(--snake-dark); }
+.hero p.sub { font-size: 1.1rem; margin: 14px auto 20px; max-width: 560px; font-weight: 700; color: #4a5085; }
+.hero .mascot { font-size: 4rem; animation: bob 2.6s ease-in-out infinite; display: inline-block; }
+@keyframes bob { 0%,100% { transform: translateY(0) rotate(-4deg);} 50% { transform: translateY(-10px) rotate(4deg);} }
+.big-btn {
+  border: 3px solid var(--ink); border-radius: 18px; padding: 13px 26px;
+  font-size: 1.15rem; font-weight: 700; box-shadow: var(--shadow); transition: transform .08s;
+}
+.big-btn:hover { transform: translate(-2px,-2px); }
+.big-btn.green { background: var(--snake); }
+.big-btn.yellow { background: var(--py-yellow); }
+.big-btn.blue { background: var(--py-blue); color: #fff; }
+
+/* ---------- age tracks ---------- */
+.tracks { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 22px; }
+.track {
+  border: 3px solid var(--ink); border-radius: 16px; background: var(--card);
+  padding: 10px 16px; font-weight: 800; box-shadow: var(--shadow-sm); font-size: .95rem;
+  font-family: 'Fredoka';
+}
+.track small { display: block; font-family: 'Nunito'; font-weight: 700; color: #6a70a3; }
+.track.selected { background: var(--py-yellow); transform: translate(-1px,-1px); }
+
+/* ---------- snake map (signature) ---------- */
+.map-wrap { margin-top: 26px; }
+.map-wrap h2 { text-align: center; margin-bottom: 4px; }
+.map-wrap p.hint { text-align: center; color: #6a70a3; font-weight: 700; margin-bottom: 10px; }
+#snake-map { width: 100%; height: auto; display: block; }
+.node { cursor: pointer; }
+.node circle.face { transition: transform .1s; }
+.node:hover circle.face { transform: scale(1.07); transform-origin: center; transform-box: fill-box; }
+.node text { font-family: 'Fredoka', sans-serif; pointer-events: none; }
+.node .label { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px; fill: var(--ink); }
+
+/* ---------- lesson view ---------- */
+.lesson-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.lesson-head h2 { font-size: 1.6rem; }
+.chip { border: 3px solid var(--ink); border-radius: 999px; padding: 4px 12px; font-weight: 800; font-size: .8rem; background: var(--py-yellow); }
+.chip.free { background: var(--snake); }
+.back { background: var(--card); }
+.story { font-size: 1.05rem; font-weight: 600; line-height: 1.55; margin-bottom: 16px; }
+.story code, .msg code { font-family: 'Fira Code', monospace; background: #eef1ff; border: 2px solid var(--ink); border-radius: 6px; padding: 1px 6px; font-size: .9em; }
+
+/* ---------- maze game ---------- */
+.maze-area { display: grid; grid-template-columns: 1fr 260px; gap: 18px; }
+@media (max-width: 720px) { .maze-area { grid-template-columns: 1fr; } }
+.maze-grid { display: grid; gap: 6px; justify-content: center; align-content: start; }
+.cell {
+  width: 58px; height: 58px; border: 3px solid var(--ink); border-radius: 12px;
+  background: #e9f9f1; display: flex; align-items: center; justify-content: center; font-size: 1.7rem;
+}
+@media (max-width: 480px) { .cell { width: 44px; height: 44px; font-size: 1.3rem; } }
+.cell.wall { background: var(--ink); border-color: var(--ink); }
+.cmd-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+.cmd {
+  border: 3px solid var(--ink); border-radius: 12px; background: var(--py-yellow);
+  font-size: 1.3rem; width: 50px; height: 50px; box-shadow: var(--shadow-sm);
+}
+.cmd:hover { transform: translate(-1px,-1px); }
+.program {
+  min-height: 58px; border: 3px dashed var(--ink); border-radius: 14px; background: #fffdf2;
+  display: flex; gap: 6px; flex-wrap: wrap; padding: 8px; align-items: center;
+}
+.program .step {
+  border: 3px solid var(--ink); border-radius: 10px; background: var(--card);
+  font-size: 1.1rem; width: 42px; height: 42px; cursor: pointer;
+}
+.program .step:hover { background: var(--coral); }
+.program .empty-note { color: #8a90bd; font-weight: 700; font-size: .9rem; }
+.run-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+
+/* ---------- code editor ---------- */
+.editor-wrap { border: 3px solid var(--ink); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); }
+.editor-bar { background: var(--ink); color: #fff; padding: 8px 14px; font-family: 'Fredoka'; font-size: .9rem; display:flex; gap:8px; align-items:center; }
+.editor-bar .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+textarea.editor {
+  width: 100%; min-height: 150px; border: none; resize: vertical;
+  font-family: 'Fira Code', monospace; font-size: .95rem; padding: 14px; background: #fbfcff; color: var(--ink);
+  line-height: 1.55;
+}
+textarea.editor:focus { outline: none; background: #f4f8ff; }
+.output {
+  border: 3px solid var(--ink); border-radius: 14px; background: #101433; color: #b8ffda;
+  font-family: 'Fira Code', monospace; font-size: .92rem; padding: 14px; min-height: 64px;
+  white-space: pre-wrap; margin-top: 12px;
+}
+.output .err { color: #ff9d9d; }
+.task-check { margin-top: 12px; font-weight: 800; border: 3px solid var(--ink); border-radius: 14px; padding: 12px 14px; display: none; }
+.task-check.ok { display: block; background: #d9ffe9; }
+.task-check.bad { display: block; background: #ffe3e3; }
+
+/* ---------- quiz ---------- */
+.quiz-q { font-weight: 800; font-size: 1.05rem; margin: 14px 0 8px; }
+.quiz-opts { display: grid; gap: 8px; }
+.quiz-opt {
+  text-align: left; border: 3px solid var(--ink); border-radius: 14px; background: var(--card);
+  padding: 11px 14px; font-family: 'Nunito'; font-weight: 700; font-size: .98rem;
+}
+.quiz-opt:hover { background: #eef1ff; }
+.quiz-opt.right { background: var(--snake); }
+.quiz-opt.wrong { background: var(--coral); color: #fff; }
+.quiz-expl { display: none; margin-top: 8px; font-weight: 700; color: #4a5085; }
+
+/* ---------- tutor chat ---------- */
+.chat-box { display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto; padding: 4px; }
+.msg { border: 3px solid var(--ink); border-radius: 16px; padding: 10px 14px; max-width: 85%; font-weight: 600; line-height: 1.5; white-space: pre-wrap; }
+.msg.sage { background: #e9f9f1; align-self: flex-start; border-bottom-left-radius: 4px; }
+.msg.kid { background: var(--py-yellow); align-self: flex-end; border-bottom-right-radius: 4px; }
+.chat-input-row { display: flex; gap: 8px; margin-top: 12px; }
+.chat-input-row input {
+  flex: 1; border: 3px solid var(--ink); border-radius: 14px; padding: 11px 14px;
+  font-family: 'Nunito'; font-weight: 700; font-size: 1rem;
+}
+.chat-input-row input:focus { outline: 3px solid var(--py-blue); }
+
+/* ---------- pro modal ---------- */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(35,40,90,.55); display: none;
+  align-items: center; justify-content: center; z-index: 100; padding: 16px;
+}
+.modal-backdrop.open { display: flex; }
+.modal { max-width: 460px; width: 100%; position: relative; }
+.modal .close { position: absolute; top: 12px; right: 12px; border: 3px solid var(--ink); background: var(--coral); color:#fff; border-radius: 12px; width: 36px; height: 36px; font-size: 1rem; }
+.price { font-size: 2.4rem; font-family: 'Fredoka'; }
+.price small { font-size: 1rem; color: #6a70a3; }
+.perks { list-style: none; margin: 14px 0; display: grid; gap: 8px; font-weight: 700; }
+.perks li::before { content: "🐍 "; }
+.demo-note { font-size: .8rem; color: #6a70a3; font-weight: 700; margin-top: 10px; }
+
+/* ---------- confetti ---------- */
+.confetti { position: fixed; top: -14px; font-size: 1.3rem; z-index: 200; animation: fall linear forwards; pointer-events: none; }
+@keyframes fall { to { transform: translateY(105vh) rotate(720deg); opacity: .7; } }
+
+/* ---------- badges / toast ---------- */
+#toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(120px);
+  background: var(--ink); color: #fff; border-radius: 16px; padding: 12px 20px;
+  font-family: 'Fredoka'; font-size: 1rem; z-index: 150; transition: transform .25s; border: 3px solid var(--py-yellow);
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+.footer-note { text-align:center; margin-top: 40px; color:#8a90bd; font-weight:700; font-size:.85rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="snake-emoji">🐍</span><b>Python</b>&nbsp;<span>for</span>&nbsp;<span class="kids">Kids</span></div>
+  <nav aria-label="Main">
+    <button class="navbtn active" data-nav="home"  onclick="showView('home')">🏠 Home</button>
+    <button class="navbtn" data-nav="playground" onclick="showView('playground')">🧪 Playground</button>
+    <button class="navbtn" data-nav="tutor" onclick="showView('tutor')">🤖 Ask Sage</button>
+    <button class="navbtn pro" onclick="openPro()">⭐ Go Pro</button>
+  </nav>
+  <div class="xp-pill" id="xp-pill" aria-live="polite">⚡ 0 XP</div>
+</header>
+
+<main>
+  <!-- ================= HOME ================= -->
+  <section id="view-home" class="view visible">
+    <div class="card hero">
+      <span class="mascot" aria-hidden="true">🐍</span>
+      <h1><span class="py">Python</span> for <span class="kids">Kids</span></h1>
+      <p class="sub">Guide Sage the Snake through puzzles, write real Python code, and become a coding hero — one bite-sized lesson at a time.</p>
+      <button class="big-btn green" onclick="openLesson(1)">▶ Start your adventure — it's free</button>
+      <div class="tracks" id="tracks" role="group" aria-label="Pick your age track"></div>
+    </div>
+
+    <div class="map-wrap">
+      <h2>🗺️ The Snake Trail</h2>
+      <p class="hint">Every lesson is a scale on Sage's back. First 3 are free!</p>
+      <div class="card" style="padding:10px 6px;">
+        <svg id="snake-map" viewBox="0 0 760 1240" role="list" aria-label="Lesson map"></svg>
+      </div>
+    </div>
+    <p class="footer-note">Made with 🐍 + ❤️ · Kids write real Python, run right in the browser.</p>
+  </section>
+
+  <!-- ================= LESSON ================= -->
+  <section id="view-lesson" class="view">
+    <div class="lesson-head">
+      <button class="navbtn back" onclick="showView('home')">← Map</button>
+      <h2 id="lesson-title"></h2>
+      <span class="chip" id="lesson-chip"></span>
+    </div>
+    <div class="card" id="lesson-body"></div>
+  </section>
+
+  <!-- ================= PLAYGROUND ================= -->
+  <section id="view-playground" class="view">
+    <div class="lesson-head">
+      <h2>🧪 Python Playground</h2>
+      <span class="chip free">FREE</span>
+    </div>
+    <div class="card">
+      <p class="story">Type any Python you like and press <b>Run</b>. Try one of Sage's favorites:</p>
+      <div class="cmd-row">
+        <button class="navbtn" onclick="loadSnippet('hello')">👋 Hello</button>
+        <button class="navbtn" onclick="loadSnippet('loop')">🔁 Loop</button>
+        <button class="navbtn" onclick="loadSnippet('art')">🎨 Star art</button>
+        <button class="navbtn" onclick="loadSnippet('math')">🧮 Math magic</button>
+      </div>
+      <div class="editor-wrap">
+        <div class="editor-bar"><span class="dot" style="background:#ff6b6b"></span><span class="dot" style="background:#ffd43b"></span><span class="dot" style="background:#34d399"></span> playground.py</div>
+        <textarea class="editor" id="pg-editor" spellcheck="false" aria-label="Python code editor">print("Hello, world! I am coding! 🎉")</textarea>
+      </div>
+      <div class="run-row">
+        <button class="big-btn green" onclick="runInto('pg-editor','pg-output')">▶ Run</button>
+        <button class="big-btn yellow" onclick="document.getElementById('pg-output').textContent='(output will appear here)'">🧹 Clear</button>
+      </div>
+      <div class="output" id="pg-output">(output will appear here)</div>
+    </div>
+  </section>
+
+  <!-- ================= TUTOR ================= -->
+  <section id="view-tutor" class="view">
+    <div class="lesson-head">
+      <h2>🤖 Ask Sage</h2>
+      <span class="chip free">FREE</span>
+    </div>
+    <div class="card">
+      <div class="chat-box" id="chat-box">
+        <div class="msg sage">Ssssalutations! I'm Sage 🐍 — your Python tutor. Stuck on a lesson? Curious how loops work? Ask me anything about coding!</div>
+      </div>
+      <div class="chat-input-row">
+        <input id="chat-input" type="text" placeholder="Type your question…" aria-label="Ask Sage a question"
+               onkeydown="if(event.key==='Enter')sendChat()" />
+        <button class="big-btn blue" onclick="sendChat()">Send</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ================= PRO MODAL ================= -->
+<div class="modal-backdrop" id="pro-modal" role="dialog" aria-modal="true" aria-labelledby="pro-title">
+  <div class="card modal">
+    <button class="close" onclick="closePro()" aria-label="Close">✕</button>
+    <h2 id="pro-title">⭐ Python for Kids <span style="color:var(--purple)">Pro</span></h2>
+    <p class="price">$6<small>/month</small></p>
+    <ul class="perks">
+      <li>All 12 lessons — loops to your first game</li>
+      <li>New challenges every month</li>
+      <li>Printable badge certificates</li>
+      <li>Priority help from Sage</li>
+    </ul>
+    <button class="big-btn blue" style="width:100%" onclick="demoUnlock()">Unlock demo (no payment)</button>
+    <p class="demo-note">Demo build: real checkout (Stripe) requires a backend and is not wired into this static preview. No money is ever charged here.</p>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+
+<script>
+"use strict";
+/* ============================================================================
+ * PYTHON FOR KIDS — application logic
+ *
+ * Architecture (single-file, zero-build, GitHub-Pages friendly):
+ *  - state:      in-memory session state (XP, completions, Pro flag, track)
+ *  - lessons:    data-driven lesson registry; 1–3 fully interactive & free
+ *  - maze:       tap-to-program grid game (sequencing, Lesson 1)
+ *  - skulpt:     real Python execution in-browser (Lessons 2–3, Playground)
+ *  - tutor:      Anthropic API chat with a rule-based offline fallback
+ *
+ * Note: no localStorage by design — progress is per-session.
+ * ========================================================================== */
+
+/* ------------------------------ state ------------------------------------ */
+const state = {
+  xp: 0,
+  pro: false,
+  track: "builder",                 // explorer (5–8) | builder (9–12) | hacker (13–15)
+  completed: new Set(),             // lesson ids
+};
+
+const TRACKS = [
+  { id: "explorer", emoji: "🐣", name: "Explorer", ages: "Ages 5–8" },
+  { id: "builder",  emoji: "🛠️", name: "Builder",  ages: "Ages 9–12" },
+  { id: "hacker",   emoji: "🚀", name: "Hacker",   ages: "Ages 13–15" },
+];
+
+/* --------------------------- lesson registry ------------------------------ */
+const LESSONS = [
+  { id: 1,  emoji: "🧭", title: "Give Orders!",        sub: "What is a program?",      free: true  },
+  { id: 2,  emoji: "🗣️", title: "Make It Talk",        sub: "print()",                 free: true  },
+  { id: 3,  emoji: "📦", title: "Magic Boxes",         sub: "Variables",               free: true  },
+  { id: 4,  emoji: "🔁", title: "Loop-de-loop",        sub: "for loops",               free: false },
+  { id: 5,  emoji: "🚦", title: "Choose Your Path",    sub: "if / else",               free: false },
+  { id: 6,  emoji: "🎒", title: "Backpack of Stuff",   sub: "Lists",                   free: false },
+  { id: 7,  emoji: "🏭", title: "Spell Machines",      sub: "Functions",               free: false },
+  { id: 8,  emoji: "🔄", title: "Forever… Until",      sub: "while loops",             free: false },
+  { id: 9,  emoji: "🔑", title: "Secret Codes",        sub: "Dictionaries",            free: false },
+  { id: 10, emoji: "🧬", title: "Build Creatures",     sub: "Classes & objects",       free: false },
+  { id: 11, emoji: "🎮", title: "Make a Game",         sub: "Project: Guess the number", free: false },
+  { id: 12, emoji: "🤖", title: "Talk to an AI",       sub: "Project: your own chatbot", free: false },
+];
+
+/* ------------------------------ utilities --------------------------------- */
+/** Escape text before injecting into innerHTML. */
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+
+/** Show a toast message for 2.2 s. */
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+/** Award XP once per unique key (e.g. "l1-maze-2"). */
+const awarded = new Set();
+function awardXP(key, amount, message) {
+  if (awarded.has(key)) return;
+  awarded.add(key);
+  state.xp += amount;
+  document.getElementById("xp-pill").textContent = `⚡ ${state.xp} XP`;
+  toast(message || `+${amount} XP!`);
+  confetti(18);
+}
+
+/** Cheap emoji confetti burst. */
+function confetti(n) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const emojis = ["🎉","⭐","🐍","💛","💚","✨"];
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement("span");
+    el.className = "confetti";
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.left = Math.random() * 100 + "vw";
+    el.style.animationDuration = (1.6 + Math.random() * 1.4) + "s";
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  }
+}
+
+/* ------------------------------ navigation -------------------------------- */
+function showView(name) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("visible"));
+  document.getElementById("view-" + name).classList.add("visible");
+  document.querySelectorAll(".navbtn[data-nav]").forEach(b =>
+    b.classList.toggle("active", b.dataset.nav === name));
+  window.scrollTo({ top: 0 });
+}
+
+/* ------------------------------ age tracks -------------------------------- */
+function renderTracks() {
+  const wrap = document.getElementById("tracks");
+  wrap.innerHTML = "";
+  TRACKS.forEach(t => {
+    const b = document.createElement("button");
+    b.className = "track" + (state.track === t.id ? " selected" : "");
+    b.innerHTML = `${t.emoji} ${esc(t.name)}<small>${esc(t.ages)}</small>`;
+    b.onclick = () => { state.track = t.id; renderTracks(); toast(`${t.emoji} ${t.name} track selected!`); };
+    wrap.appendChild(b);
+  });
+}
+
+/* --------------------------- snake trail map ------------------------------ */
+/**
+ * Renders the signature element: a winding SVG python whose body is the
+ * curriculum path. Lesson nodes sit on alternating sides of each bend.
+ */
+function renderMap() {
+  const svg = document.getElementById("snake-map");
+  const pts = LESSONS.map((_, i) => ({
+    x: i % 2 === 0 ? 200 : 560,
+    y: 90 + i * 96,
+  }));
+
+  // Smooth path through the points (cubic beziers between bends).
+  let d = `M ${pts[0].x} ${pts[0].y}`;
+  for (let i = 1; i < pts.length; i++) {
+    const p0 = pts[i - 1], p1 = pts[i];
+    const my = (p0.y + p1.y) / 2;
+    d += ` C ${p0.x} ${my}, ${p1.x} ${my}, ${p1.x} ${p1.y}`;
+  }
+
+  let html = `
+    <path d="${d}" fill="none" stroke="var(--ink)" stroke-width="34" stroke-linecap="round"/>
+    <path d="${d}" fill="none" stroke="var(--snake)" stroke-width="26" stroke-linecap="round"/>
+    <path d="${d}" fill="none" stroke="var(--py-yellow)" stroke-width="8" stroke-linecap="round" stroke-dasharray="4 26"/>
+    <!-- Sage's head above lesson 1 -->
+    <g transform="translate(${pts[0].x},${pts[0].y - 66})" aria-hidden="true">
+      <ellipse cx="0" cy="0" rx="34" ry="28" fill="var(--snake)" stroke="var(--ink)" stroke-width="3.5"/>
+      <circle cx="-11" cy="-6" r="6.5" fill="#fff" stroke="var(--ink)" stroke-width="2.5"/>
+      <circle cx="11"  cy="-6" r="6.5" fill="#fff" stroke="var(--ink)" stroke-width="2.5"/>
+      <circle cx="-10" cy="-5" r="2.6" fill="var(--ink)"/><circle cx="12" cy="-5" r="2.6" fill="var(--ink)"/>
+      <path d="M -6 10 Q 0 15 6 10" stroke="var(--ink)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M 0 26 l 0 10 m 0 0 l -5 6 m 5 -6 l 5 6" stroke="var(--coral)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    </g>`;
+
+  LESSONS.forEach((L, i) => {
+    const p = pts[i];
+    const locked = !L.free && !state.pro;
+    const done = state.completed.has(L.id);
+    const fill = locked ? "var(--locked)" : (done ? "var(--py-yellow)" : "#fff");
+    const badge = locked ? "🔒" : (done ? "✅" : L.emoji);
+    const side = p.x < 380 ? 1 : -1;                 // labels toward center
+    html += `
+    <g class="node" role="listitem" tabindex="0" aria-label="Lesson ${L.id}: ${esc(L.title)}${locked ? " (locked)" : ""}"
+       onclick="openLesson(${L.id})" onkeydown="if(event.key==='Enter')openLesson(${L.id})">
+      <circle class="face" cx="${p.x}" cy="${p.y}" r="34" fill="${fill}" stroke="var(--ink)" stroke-width="3.5"/>
+      <text x="${p.x}" y="${p.y + 9}" text-anchor="middle" font-size="26">${badge}</text>
+      <text class="label" x="${p.x + side * 52}" y="${p.y - 4}" text-anchor="${side === 1 ? "start" : "end"}">${L.id}. ${esc(L.title)}</text>
+      <text class="label" x="${p.x + side * 52}" y="${p.y + 14}" text-anchor="${side === 1 ? "start" : "end"}" fill="#6a70a3" font-size="12">${esc(L.sub)}${L.free ? " · FREE" : ""}</text>
+    </g>`;
+  });
+
+  svg.innerHTML = html;
+}
+
+/* ------------------------------ pro modal --------------------------------- */
+function openPro()  { document.getElementById("pro-modal").classList.add("open"); }
+function closePro() { document.getElementById("pro-modal").classList.remove("open"); }
+function demoUnlock() {
+  state.pro = true;
+  closePro();
+  renderMap();
+  toast("⭐ Pro unlocked for this session!");
+  confetti(30);
+}
+document.getElementById("pro-modal").addEventListener("click", e => {
+  if (e.target.id === "pro-modal") closePro();
+});
+
+/* ============================================================================
+ * SKULPT — run real Python in the browser
+ * ========================================================================== */
+function skulptRead(x) {
+  if (!Sk.builtinFiles || !Sk.builtinFiles["files"][x]) {
+    throw new Error("File not found: '" + x + "'");
+  }
+  return Sk.builtinFiles["files"][x];
+}
+
+/**
+ * Execute Python code, streaming output into a callback.
+ * Resolves with { ok, output, error } — never rejects.
+ */
+function runPython(code) {
+  return new Promise(resolve => {
+    if (typeof Sk === "undefined") {
+      resolve({ ok: false, output: "", error: "Python engine didn't load. Check your internet connection and refresh." });
+      return;
+    }
+    let out = "";
+    Sk.configure({
+      output: t => { out += t; },
+      read: skulptRead,
+      __future__: Sk.python3,
+      execLimit: 6000,                       // stop runaway loops after 6 s
+    });
+    Sk.execLimit = 6000;                     // belt-and-suspenders for older builds
+    Sk.misceval
+      .asyncToPromise(() => Sk.importMainWithBody("<stdin>", false, code, true))
+      .then(() => resolve({ ok: true, output: out, error: "" }))
+      .catch(err => resolve({ ok: false, output: out, error: String(err) }));
+  });
+}
+
+/** Run code from a textarea into an output panel. Returns the run result. */
+async function runInto(editorId, outputId) {
+  const code = document.getElementById(editorId).value;
+  const panel = document.getElementById(outputId);
+  panel.textContent = "🐍 running…";
+  const res = await runPython(code);
+  if (res.ok) {
+    panel.textContent = res.output || "(the program ran, but printed nothing — try adding a print!)";
+  } else {
+    panel.innerHTML = esc(res.output) + `<span class="err">\n🐛 Oops! ${esc(res.error)}\n💡 Read the message slowly — Python is telling you exactly where it got confused.</span>`;
+  }
+  return res;
+}
+
+/* --------------------------- playground snippets --------------------------- */
+const SNIPPETS = {
+  hello: 'name = "Sage"\nprint("Hello, " + name + "!")\nprint("Welcome to Python for Kids 🐍")',
+  loop:  'for i in range(5):\n    print("🐍" * (i + 1))',
+  art:   'for row in range(1, 6):\n    print("⭐" * row)\nprint("You made star art with a loop!")',
+  math:  'apples = 7\nfriends = 3\nprint("Apples each:", apples // friends)\nprint("Left over:", apples % friends)',
+};
+function loadSnippet(key) {
+  document.getElementById("pg-editor").value = SNIPPETS[key];
+  toast("Snippet loaded — press Run!");
+}
+
+/* ============================================================================
+ * LESSON 1 — maze game (sequencing)
+ * ========================================================================== */
+const MAZES = [
+  { cols: 5, rows: 3, start: [0, 1], apple: [4, 1], walls: [],                       par: 4 },
+  { cols: 5, rows: 4, start: [0, 3], apple: [4, 0], walls: [[2,3],[2,2],[2,1]],      par: 7 },
+  { cols: 6, rows: 4, start: [0, 0], apple: [5, 3], walls: [[1,1],[2,1],[3,1],[3,2],[1,3],[2,3]], par: 8 },
+];
+const DIRS = { "⬆️": [0,-1], "⬇️": [0,1], "⬅️": [-1,0], "➡️": [1,0] };
+
+const maze = { level: 0, program: [], running: false };
+
+function mazeHTML() {
+  return `
+  <p class="story">A <b>program</b> is a list of orders the computer follows <b>in order</b>, top to bottom.
+  Tap the arrow blocks to build a program that walks Sage 🐍 to the apple 🍎. Then press Run!</p>
+  <div class="maze-area">
+    <div>
+      <div class="maze-grid" id="maze-grid"></div>
+    </div>
+    <div>
+      <p style="font-weight:800; margin-bottom:6px;">Level <span id="maze-level">1</span> of ${MAZES.length}</p>
+      <div class="cmd-row">
+        ${Object.keys(DIRS).map(d => `<button class="cmd" onclick="mazeAdd('${d}')" aria-label="Add ${d} step">${d}</button>`).join("")}
+      </div>
+      <p style="font-weight:800; margin:6px 0;">Your program: <small style="color:#8a90bd">(tap a step to delete it)</small></p>
+      <div class="program" id="maze-program"></div>
+      <div class="run-row">
+        <button class="big-btn green" onclick="mazeRun()">▶ Run</button>
+        <button class="big-btn yellow" onclick="mazeReset(true)">↺ Reset</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function mazeDraw(snakePos) {
+  const m = MAZES[maze.level];
+  const grid = document.getElementById("maze-grid");
+  grid.style.gridTemplateColumns = `repeat(${m.cols}, auto)`;
+  const isWall = (x, y) => m.walls.some(w => w[0] === x && w[1] === y);
+  let html = "";
+  for (let y = 0; y < m.rows; y++) {
+    for (let x = 0; x < m.cols; x++) {
+      const wall = isWall(x, y);
+      let icon = "";
+      if (snakePos[0] === x && snakePos[1] === y) icon = "🐍";
+      else if (m.apple[0] === x && m.apple[1] === y) icon = "🍎";
+      html += `<div class="cell${wall ? " wall" : ""}">${icon}</div>`;
+    }
+  }
+  grid.innerHTML = html;
+}
+
+function mazeDrawProgram() {
+  const el = document.getElementById("maze-program");
+  el.innerHTML = maze.program.length
+    ? maze.program.map((d, i) => `<button class="step" onclick="mazeRemove(${i})" aria-label="Remove step ${i+1}">${d}</button>`).join("")
+    : `<span class="empty-note">Tap arrows to add steps…</span>`;
+}
+
+function mazeAdd(dir) {
+  if (maze.running) return;
+  if (maze.program.length >= 20) { toast("That's a lot of steps! Try a shorter path 🙂"); return; }
+  maze.program.push(dir);
+  mazeDrawProgram();
+}
+function mazeRemove(i) {
+  if (maze.running) return;
+  maze.program.splice(i, 1);
+  mazeDrawProgram();
+}
+function mazeReset(clearProgram) {
+  maze.running = false;
+  if (clearProgram) { maze.program = []; mazeDrawProgram(); }
+  mazeDraw(MAZES[maze.level].start.slice());
+  document.getElementById("maze-level").textContent = maze.level + 1;
+}
+
+async function mazeRun() {
+  if (maze.running || !maze.program.length) { if (!maze.program.length) toast("Add some arrow steps first!"); return; }
+  maze.running = true;
+  const m = MAZES[maze.level];
+  const pos = m.start.slice();
+  const isWall = (x, y) => m.walls.some(w => w[0] === x && w[1] === y);
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  for (const dir of maze.program) {
+    await sleep(340);
+    const [dx, dy] = DIRS[dir];
+    const nx = pos[0] + dx, ny = pos[1] + dy;
+    if (nx < 0 || ny < 0 || nx >= m.cols || ny >= m.rows || isWall(nx, ny)) {
+      toast("💥 Bonk! Sage hit something. Fix the program and try again.");
+      maze.running = false;
+      mazeDraw(m.start.slice());
+      return;
+    }
+    pos[0] = nx; pos[1] = ny;
+    mazeDraw(pos);
+  }
+
+  maze.running = false;
+  if (pos[0] === m.apple[0] && pos[1] === m.apple[1]) {
+    awardXP(`l1-maze-${maze.level}`, 20, "🍎 Yum! +20 XP");
+    if (maze.level < MAZES.length - 1) {
+      maze.level += 1;
+      setTimeout(() => mazeReset(true), 700);
+    } else {
+      state.completed.add(1);
+      renderMap();
+      toast("🏅 Lesson 1 complete! You wrote your first programs!");
+    }
+  } else {
+    toast("So close! Sage didn't reach the apple — check your steps.");
+    mazeDraw(m.start.slice());
+  }
+}
+
+/* ============================================================================
+ * LESSONS 2 & 3 — real Python tasks + quiz
+ * ========================================================================== */
+
+/** Hint registry: taskId -> hint text (avoids quoting issues in inline handlers). */
+const HINTS = {};
+
+/** Show the hint registered for a task. */
+function showHint(id) {
+  toast("💡 " + (HINTS[id] || "Experiment! Change something small and Run again."));
+}
+
+/** Build an editor + run + auto-check block for a lesson task. */
+function taskBlock(id, prompt, starter, hint) {
+  HINTS[id] = hint;
+  return `
+  <div style="margin-top:22px;">
+    <p class="quiz-q">${prompt}</p>
+    <div class="editor-wrap">
+      <div class="editor-bar"><span class="dot" style="background:#ff6b6b"></span><span class="dot" style="background:#ffd43b"></span><span class="dot" style="background:#34d399"></span> ${id}.py</div>
+      <textarea class="editor" id="ed-${id}" spellcheck="false" aria-label="Code for ${id}">${esc(starter)}</textarea>
+    </div>
+    <div class="run-row">
+      <button class="big-btn green" onclick="checkTask('${id}')">▶ Run &amp; Check</button>
+      <button class="big-btn yellow" onclick="showHint('${id}')">💡 Hint</button>
+    </div>
+    <div class="output" id="out-${id}">(output will appear here)</div>
+    <div class="task-check" id="check-${id}"></div>
+  </div>`;
+}
+
+/** Validators: taskId -> fn(output, code) => true if the task is passed. */
+const TASK_CHECKS = {
+  "l2-t1":  out => out.trim().length > 0,
+  "l2-t2":  out => out.trim().split("\n").filter(l => l.trim()).length >= 2,
+  "l2-t3":  out => out.includes("I fixed a bug"),
+  "l3-t1":  (out, code) => /\bage\s*=/.test(code) && /\d/.test(out),
+  "l3-t2":  out => out.includes("16"),
+  "l4-t1":  (out, code) => /\bfor\b/.test(code) && out.split("🐍").length - 1 >= 5,
+  "l5-t1":  (out, code) => /\bif\b/.test(code) && out.includes("big kid"),
+  "l6-t1":  (out, code) => code.includes("[") && out.trim().split("\n").length >= 2,
+  "l7-t1":  (out, code) => /\bdef\b/.test(code) && out.includes("Hello"),
+  "l8-t1":  (out, code) => /\bwhile\b/.test(code) && out.includes("Blastoff"),
+  "l9-t1":  (out, code) => code.includes("{") && out.trim().length > 0,
+  "l10-t1": (out, code) => /\bclass\b/.test(code) && out.includes("Woof"),
+  "l11-t1": out => out.includes("You got it"),
+  "l12-t1": (out, code) => /\bif\b/.test(code) && out.trim().split("\n").length >= 3,
+};
+const TASK_XP = {
+  "l2-t1": 15, "l2-t2": 15, "l2-t3": 20, "l3-t1": 15, "l3-t2": 20,
+  "l4-t1": 25, "l5-t1": 25, "l6-t1": 25, "l7-t1": 30, "l8-t1": 30,
+  "l9-t1": 30, "l10-t1": 35, "l11-t1": 40, "l12-t1": 40,
+};
+
+async function checkTask(id) {
+  const res = await runInto("ed-" + id, "out-" + id);
+  const box = document.getElementById("check-" + id);
+  const code = document.getElementById("ed-" + id).value;
+  const passed = res.ok && TASK_CHECKS[id](res.output, code);
+  box.className = "task-check " + (passed ? "ok" : "bad");
+  if (passed) {
+    box.textContent = "✅ Nailed it!";
+    awardXP(id, TASK_XP[id], `✅ +${TASK_XP[id]} XP`);
+    maybeCompleteLesson();
+  } else {
+    box.textContent = res.ok
+      ? "🤔 Not quite — the output isn't what we're looking for yet. Try the hint!"
+      : "🐛 There's a bug. Read Python's message in the output, then try again.";
+  }
+}
+
+/** Mark a lesson complete when all of its tasks have been passed. */
+function maybeCompleteLesson() {
+  const lessonTasks = {
+    2: ["l2-t1","l2-t2","l2-t3"],
+    3: ["l3-t1","l3-t2","l3-quiz"],
+    4: ["l4-t1"],  5: ["l5-t1"],  6: ["l6-t1"],  7: ["l7-t1"],
+    8: ["l8-t1"],  9: ["l9-t1"], 10: ["l10-t1"], 11: ["l11-t1"], 12: ["l12-t1"],
+  };
+  for (const [lesson, tasks] of Object.entries(lessonTasks)) {
+    if (!state.completed.has(+lesson) && tasks.every(t => awarded.has(t))) {
+      state.completed.add(+lesson);
+      renderMap();
+      toast(`🏅 Lesson ${lesson} complete!`);
+      confetti(28);
+    }
+  }
+}
+
+/** Simple one-question-at-a-time quiz renderer. */
+function quizBlock(quizId, questions) {
+  let html = `<div id="${quizId}" style="margin-top:26px;"><h3>🧠 Quick quiz</h3>`;
+  questions.forEach((q, qi) => {
+    html += `<p class="quiz-q">${qi + 1}. ${q.q}</p><div class="quiz-opts">`;
+    q.opts.forEach((opt, oi) => {
+      html += `<button class="quiz-opt" onclick="answerQuiz('${quizId}',${qi},${oi},${q.right},this)">${esc(opt)}</button>`;
+    });
+    html += `</div><p class="quiz-expl" id="${quizId}-expl-${qi}">💡 ${q.expl}</p>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+const quizProgress = {};   // quizId -> Set of correctly answered question indices
+const QUIZ_SIZES = { "l3-quiz": 3 };
+
+function answerQuiz(quizId, qi, chosen, right, btn) {
+  const expl = document.getElementById(`${quizId}-expl-${qi}`);
+  const siblings = btn.parentElement.querySelectorAll(".quiz-opt");
+  if (chosen === right) {
+    siblings.forEach(b => (b.disabled = true));
+    btn.classList.add("right");
+    expl.style.display = "block";
+    quizProgress[quizId] = quizProgress[quizId] || new Set();
+    quizProgress[quizId].add(qi);
+    if (quizProgress[quizId].size === QUIZ_SIZES[quizId]) {
+      awardXP(quizId, 25, "🧠 Quiz champion! +25 XP");
+      maybeCompleteLesson();
+    } else {
+      toast("✅ Correct!");
+    }
+  } else {
+    btn.classList.add("wrong");
+    btn.disabled = true;
+    toast("Not that one — try again!");
+  }
+}
+
+/* ----------------------------- lesson bodies ------------------------------- */
+function lessonBody(id) {
+  if (id === 1) return mazeHTML();
+
+  if (id === 2) {
+    return `
+    <p class="story">Computers talk with <code>print()</code>. Whatever you put inside the parentheses
+    (in quotes!) shows up on screen. It's how your program says hello to the world. 🌍</p>
+    ${taskBlock("l2-t1", "Task 1 · Make the computer print YOUR name.",
+      'print("type your name here")',
+      'Change the words between the quotes to your name, then Run.')}
+    ${taskBlock("l2-t2", "Task 2 · Print TWO different lines (two prints!).",
+      'print("line one")\n',
+      'Write print() twice, each on its own line, with different words.')}
+    ${taskBlock("l2-t3", "Task 3 · Bug hunt! 🐛 This code is broken. Fix it so it prints exactly: I fixed a bug",
+      'print("I fixed a bug)',
+      'Look super closely at the quotes. Every opening quote needs a closing quote before the ).')}
+    `;
+  }
+
+  if (id === 3) {
+    return `
+    <p class="story">A <b>variable</b> is a magic box 📦 with a name. You put something inside with
+    <code>=</code>, and later you can use the box's name instead of the thing.
+    <br><br><code>snacks = 5</code> means: put the number 5 in a box called <code>snacks</code>.</p>
+    ${taskBlock("l3-t1", "Task 1 · Make a box called age with YOUR age inside, then print it.",
+      'age = 0\nprint(age)',
+      'Change the 0 to your age. The variable name must stay exactly "age".')}
+    ${taskBlock("l3-t2", "Task 2 · Box math! Make this print 16 by fixing the numbers.",
+      'candies = 10\nmore_candies = 3\nprint(candies + more_candies)',
+      'What two numbers add up to 16? Change 10 and 3 (or just one of them).')}
+    ${quizBlock("l3-quiz", [
+      { q: "What does <code>x = 7</code> do?", right: 1,
+        opts: ["Checks if x is 7", "Puts 7 into a box called x", "Prints the number 7"],
+        expl: "One = means \"store this!\" (Checking uses two: ==. That comes later!)" },
+      { q: "After <code>pet = \"cat\"</code>, what does <code>print(pet)</code> show?", right: 2,
+        opts: ["pet", "nothing", "cat"],
+        expl: "No quotes around pet, so Python opens the box and prints what's inside: cat." },
+      { q: "Which is a good variable name?", right: 0,
+        opts: ["high_score", "2cool", "my score"],
+        expl: "Names can't start with a number or contain spaces. high_score is perfect." },
+    ])}`;
+  }
+
+  // ---- Pro lessons (unlocked): story + one hands-on Python task each ----
+  const PRO = {
+    4: {
+      story: `Typing the same thing over and over is boring — that's what <b>loops</b> are for!
+        <code>for i in range(5):</code> means "do the indented part 5 times." 🔁`,
+      task: taskBlock("l4-t1", "Task · Use a for loop to print 🐍 five times (one per line).",
+        '# use a for loop, not 5 prints!\nfor i in range(1):\n    print("🐍")',
+        "range(1) repeats once. What number makes it repeat 5 times?"),
+    },
+    5: {
+      story: `Programs can <b>choose a path</b>. <code>if</code> checks something; when it's true,
+        the indented code runs. Otherwise, <code>else</code> runs. 🚦`,
+      task: taskBlock("l5-t1", 'Task · Fix the age so the program prints "big kid".',
+        'age = 5\nif age > 9:\n    print("big kid")\nelse:\n    print("little kid")',
+        "The check is age > 9. What age makes that true?"),
+    },
+    6: {
+      story: `A <b>list</b> is a backpack that holds many things: <code>pets = ["cat", "dog", "fish"]</code>.
+        Grab items by position — computers start counting at <b>0</b>! 🎒`,
+      task: taskBlock("l6-t1", "Task · Print the FIRST and the LAST pet from the list.",
+        'pets = ["cat", "dog", "fish"]\nprint(pets[0])\n# now print the last one!',
+        "The list has 3 items at positions 0, 1, 2. The last one is pets[2]."),
+    },
+    7: {
+      story: `A <b>function</b> is a spell you write once and cast many times.
+        <code>def</code> creates it; calling its name runs it. 🏭`,
+      task: taskBlock("l7-t1", 'Task · Finish the greet spell so it prints "Hello, " plus the name — then cast it twice!',
+        'def greet(name):\n    print("Hello, " + name)\n\ngreet("Sage")\n# cast it again with YOUR name!',
+        "Add one more line at the bottom: greet(\"YourName\")"),
+    },
+    8: {
+      story: `<code>while</code> repeats <b>as long as</b> something is true — like a rocket countdown
+        that keeps going until it hits zero. 🚀`,
+      task: taskBlock("l8-t1", 'Task · Finish the countdown: 5 4 3 2 1 then "Blastoff!"',
+        'count = 5\nwhile count > 0:\n    print(count)\n    count = count - 1\n# what happens AFTER the loop ends?',
+        'After the loop (no indent!), add: print("Blastoff!")'),
+    },
+    9: {
+      story: `A <b>dictionary</b> pairs a key with a value, like a secret decoder:
+        <code>colors = {"sky": "blue"}</code> — ask for <code>colors["sky"]</code>, get <code>blue</code>. 🔑`,
+      task: taskBlock("l9-t1", "Task · Add your favorite animal to the dictionary and print it.",
+        'favorites = {"color": "green", "food": "pizza"}\nprint(favorites["food"])\n# add a new key "animal" and print it!',
+        'favorites["animal"] = "tiger" adds it. Then print(favorites["animal"]).'),
+    },
+    10: {
+      story: `A <b>class</b> is a blueprint for creating things. Build a <code>Dog</code> blueprint once,
+        then make as many dogs as you like — each one can bark! 🧬`,
+      task: taskBlock("l10-t1", 'Task · Make the dog bark! Finish the class so it prints "Woof!"',
+        'class Dog:\n    def bark(self):\n        print("...")\n\nrex = Dog()\nrex.bark()',
+        'Change the "..." to Woof! — then Run and listen. 🐶'),
+    },
+    11: {
+      story: `<b>Project time!</b> A guessing game uses everything you've learned:
+        variables, loops, and if/else. The code below checks a list of guesses against a secret number. 🎮`,
+      task: taskBlock("l11-t1", 'Task · The secret number is 7. Fix the guesses list so the game prints "You got it!"',
+        'secret = 7\nguesses = [2, 5, 9]\n\nfor guess in guesses:\n    if guess == secret:\n        print("You got it!")\n    elif guess < secret:\n        print(guess, "is too low")\n    else:\n        print(guess, "is too high")',
+        "None of the guesses is 7 yet. Add 7 to the list (or change one)."),
+    },
+    12: {
+      story: `<b>Final project:</b> chatbots pick replies using <code>if / elif / else</code> —
+        the same tool you already know! Teach Chatty a new trick, then go test the real AI in <b>🤖 Ask Sage</b>. 🤖`,
+      task: taskBlock("l12-t1", 'Task · Teach Chatty to answer "how are you" — add an elif for it, then check all three replies print.',
+        'messages = ["hello", "how are you", "bye"]\n\nfor m in messages:\n    if m == "hello":\n        print("Chatty: Hi there!")\n    elif m == "bye":\n        print("Chatty: See you later!")\n    else:\n        print("Chatty: I don\'t understand yet...")',
+        'Add: elif m == "how are you": (then an indented print) ABOVE the else.'),
+    },
+  };
+
+  const L = LESSONS.find(l => l.id === id);
+  const p = PRO[id];
+  return `<p class="story">${p.story}</p>${p.task}
+    <p class="story" style="margin-top:20px;">✅ Pass the task to finish <b>${esc(L.title)}</b> and light it up on the Snake Trail!</p>`;
+}
+
+/** Locked teaser shown when a Pro lesson is opened without Pro. */
+function lockedTeaser(L) {
+  return `
+    <p class="story">🔒 <b>${esc(L.title)}</b> (${esc(L.sub)}) is a <b>Pro</b> lesson.
+    Unlock all 12 lessons — from loops all the way to building your own game and chatbot!</p>
+    <button class="big-btn blue" onclick="openPro()">⭐ See Pro</button>`;
+}
+
+function openLesson(id) {
+  const L = LESSONS.find(l => l.id === id);
+  const locked = !L.free && !state.pro;
+  document.getElementById("lesson-title").textContent = `${L.emoji} ${L.title}`;
+  const chip = document.getElementById("lesson-chip");
+  chip.textContent = locked ? "PRO 🔒" : (L.free ? "FREE" : "PRO ⭐");
+  chip.className = "chip" + (L.free ? " free" : "");
+  document.getElementById("lesson-body").innerHTML = locked ? lockedTeaser(L) : lessonBody(id);
+  showView("lesson");
+  if (id === 1 && !locked) { mazeDrawProgram(); mazeReset(false); }
+}
+
+/* ============================================================================
+ * SAGE — AI tutor (Anthropic API with offline fallback)
+ * ========================================================================== */
+const chatHistory = [];   // [{role, content}] sent to the API
+let chatBusy = false;
+
+const SAGE_SYSTEM = () => {
+  const track = TRACKS.find(t => t.id === state.track);
+  return `You are Sage, a friendly cartoon python who tutors kids learning Python programming.
+The student is on the "${track.name}" track (${track.ages}). Rules:
+- Keep answers SHORT (under 100 words), warm, and simple for that age.
+- Use tiny code examples when helpful.
+- NEVER write complete solutions to their exercises; give hints and guiding questions instead.
+- Stay on the topic of coding and this app's lessons. Gently redirect anything else.
+- Sprinkle in an occasional snake pun or 🐍, but don't overdo it.`;
+};
+
+/** Offline fallback: keyword-based hints so the tutor works on static hosting. */
+function offlineSage(q) {
+  const s = q.toLowerCase();
+  if (s.includes("print")) return "print() shows words on screen! Put your message in quotes inside the parentheses:\nprint(\"hello\")\nDid you remember BOTH quotes? 🐍";
+  if (s.includes("variable") || s.includes("box")) return "A variable is a named box. Store with one equals sign:\nscore = 10\nThen print(score) shows what's inside. What do you want to store?";
+  if (s.includes("loop") || s.includes("for") || s.includes("repeat")) return "Loops repeat things so YOU don't have to!\nfor i in range(3):\n    print(\"hi\")\nThat prints hi 3 times. Try changing the 3! 🔁";
+  if (s.includes("if") || s.includes("else")) return "if lets your program choose a path:\nif age > 9:\n    print(\"big kid!\")\nThe indented part only runs when the check is true. 🚦";
+  if (s.includes("error") || s.includes("bug") || s.includes("wrong") || s.includes("stuck")) return "Bugs happen to every coder — even the pros! Read Python's error message from the bottom up: it names the line where it got confused. Check quotes, colons, and spelling first. You've got this! 🐛";
+  if (s.includes("list")) return "A list is a backpack of stuff:\npets = [\"cat\", \"dog\"]\nprint(pets[0]) shows the FIRST item (computers count from 0!). 🎒";
+  return "Great question! Try it in the 🧪 Playground and watch what happens — experimenting is how real coders learn. If you get an error, read it slowly and tell me what it says! 🐍";
+}
+
+function addMsg(text, who) {
+  const box = document.getElementById("chat-box");
+  const div = document.createElement("div");
+  div.className = "msg " + who;
+  div.textContent = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  return div;
+}
+
+async function sendChat() {
+  if (chatBusy) return;
+  const input = document.getElementById("chat-input");
+  const q = input.value.trim();
+  if (!q) return;
+  input.value = "";
+  addMsg(q, "kid");
+  chatHistory.push({ role: "user", content: q });
+  chatBusy = true;
+  const thinking = addMsg("🐍 thinking…", "sage");
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        system: SAGE_SYSTEM(),
+        messages: chatHistory.slice(-12),          // keep context small
+      }),
+    });
+    if (!response.ok) throw new Error("API " + response.status);
+    const data = await response.json();
+    const text = (data.content || [])
+      .filter(b => b.type === "text")
+      .map(b => b.text)
+      .join("\n")
+      .trim();
+    if (!text) throw new Error("empty response");
+    thinking.textContent = text;
+    chatHistory.push({ role: "assistant", content: text });
+  } catch (err) {
+    // Static hosting (e.g. GitHub Pages) has no API access — fall back gracefully.
+    const fallback = offlineSage(q);
+    thinking.textContent = fallback;
+    chatHistory.push({ role: "assistant", content: fallback });
+  } finally {
+    chatBusy = false;
+  }
+}
+
+/* ------------------------------- boot ------------------------------------- */
+renderTracks();
+renderMap();
+</script>
+</body>
+</html>
